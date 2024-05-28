@@ -4,18 +4,47 @@ import org.example.utils.PlotDrawer;
 
 public class Main
 {
+    public static int[] bits = {
+            1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+            1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1,
+            1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1
+    };
+
     public static void main(String[] args)
     {
-        System.out.println("Bit vector:");
-        printBits(TransmissionSystem.bits);
+        zadanie1();
+    }
 
-        int[] encodedBits = TransmissionSystem.encode();
-        System.out.println("Encoded bits");
+    public static void zadanie1()
+    {
+        System.out.println("Original data:");
+        printBits(bits);
+
+        int[] encodedBits = TransmissionSystem.encode(bits);
+        System.out.println("Encoded data:");
         printBits(encodedBits);
 
-        double[] modulatedBits = TransmissionSystem.modulate(encodedBits);
-        printData(modulatedBits);
-        PlotDrawer.drawSignalPlot(modulatedBits, modulatedBits.length, "testASK");
+        String modulationType = "ASK";
+        System.out.println("Modulation type: " + modulationType);
+        double[] modulatedBits = TransmissionSystem.modulate(encodedBits, modulationType);
+
+        int[] demodulatedBits = TransmissionSystem.demodulate(modulatedBits, modulationType);
+        System.out.println("Demodulated data:");
+        printBits(demodulatedBits);
+
+        int[] decodedBits = TransmissionSystem.decode(demodulatedBits);
+        System.out.println("Decoded data:");
+        printBits(decodedBits);
+    }
+
+    public static void zadanie2()
+    {
+
+    }
+
+    public static void zadanie3()
+    {
+
     }
 
     public static void printBits(int[] data)
@@ -27,6 +56,8 @@ public class Main
         System.out.println();
     }
 
+
+    // Utils
     public static void printData(double[] data)
     {
         for(double i : data)
@@ -48,5 +79,3 @@ public class Main
         return bitArray;
     }
 }
-
-

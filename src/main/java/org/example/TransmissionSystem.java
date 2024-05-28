@@ -1,17 +1,12 @@
 package org.example;
 
+import org.example.utils.Demodulations;
 import org.example.utils.Hamming_7_4;
 import org.example.utils.Modulations;
 
 public class TransmissionSystem
 {
-    public static int[] bits = {
-            1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1,
-            1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1,
-            1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1
-    };
-
-    public static int[] encode()
+    public static int[] encode(int[] bits)
     {
         int subArraysCount = bits.length / 4;
         int[] encodedBits = new int[subArraysCount * 7];
@@ -30,24 +25,65 @@ public class TransmissionSystem
             while(j < encodedSubArray.length)
             {
                 encodedBits[index] = encodedSubArray[j];
-                j++;
                 index++;
+                j++;
             }
         }
 
         return encodedBits;
     }
 
-    public static double[] modulate(int[] encodedBits)
+    public static double[] modulate(int[] encodedBits, String modulationType)
     {
-        Modulations modulations = new Modulations(encodedBits);
-        double[][] signals = Modulations.generateModulations();
+        Modulations m = new Modulations(encodedBits);
+        double[][] modulations = Modulations.generateModulations();
 
-        return signals[0]; // ASK
+        switch(modulationType)
+        {
+            case "ASK" -> {return modulations[0];}
+            case "PSK" -> {return modulations[1];}
+            case "FSK" -> {return modulations[2];}
+        }
+
+        return modulations[0]; // default
     }
 
-    public static int[] demodulate()
+    public static int[] demodulate(double[] modulatedBits, String demodulationType)
     {
-        return null;
+        switch(demodulationType)
+        {
+            case "ASK" -> {return Demodulations.demodulateASK(modulatedBits, modulatedBits.length);}
+            case "PSK" -> {return Demodulations.demodulatePSK(modulatedBits, modulatedBits.length);}
+            case "FSK" -> {return Demodulations.demodulateFSK(modulatedBits, modulatedBits.length);}
+        }
+
+        return Demodulations.demodulateASK(modulatedBits, modulatedBits.length); // default
+    }
+
+    public static int[] decode(int[] demodulatedBits)
+    {
+        int subArrayCount = demodulatedBits.length / 7;
+        int[] decodedBits = new int[demodulatedBits.length - (subArrayCount * 3)];
+
+        int index = 0;
+        for(int i = 0; i < demodulatedBits.length; i += 7)
+        {
+            int[] subArray = new int[7];
+            for(int j = i, k = 0; j < i + 7; j++, k++)
+            {
+                subArray[k] = demodulatedBits[j];
+            }
+            int[] decodedSubArray = Hamming_7_4.decode(subArray);
+
+            int j = 0;
+            while(j < decodedSubArray.length)
+            {
+                decodedBits[index] = decodedSubArray[j];
+                index++;
+                j++;
+            }
+        }
+
+        return decodedBits;
     }
 }

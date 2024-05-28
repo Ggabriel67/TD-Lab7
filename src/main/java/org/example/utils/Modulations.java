@@ -6,7 +6,7 @@ import static java.lang.Math.sin;
 public class Modulations
 {
     public static int Tc = 4;
-    public static int fs = 8000;
+    public static int fs = 3000;
     public static int N = Tc * fs;
     public static int[] b;
     public static int M;

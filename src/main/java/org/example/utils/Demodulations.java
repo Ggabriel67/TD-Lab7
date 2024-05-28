@@ -1,15 +1,15 @@
 package org.example.utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jfree.chart.util.ArrayUtils;
 
-import static org.example.utils.Modulations.generateSinus;
-import static org.example.utils.Modulations.generateSinusFSK;
+import java.util.*;
+
+import static org.example.utils.Modulations.*;
 import static org.example.utils.PlotDrawer.*;
 
 public class Demodulations
 {
-    public static void demodulateASK(double[] zA, int N)
+    public static int[] demodulateASK(double[] zA, int N)
     {
         double[] sinus = generateSinus();
         int Tbp = Modulations.Tbp;
@@ -29,24 +29,30 @@ public class Demodulations
             p[n] = s;
         }
 
-        double h = (Modulations.A1 / Modulations.A2) * Tbp;
+//        double h = (A1 / A2) * Tbp;
+        double max = Arrays.stream(p).max().orElse(0);
+        double h = max/2 + 1;
 
         for(int n = 0; n < N; n++)
         {
             c[n] = p[n] > h ? 1 : 0;
         }
 
-        drawSignalPlot(sinus, N, "sinus");
-        drawSignalPlot(zA, N, "ask_z");
-        drawSignalPlot(x, N, "ask_x");
-        drawSignalPlot(p, N, "ask_p");
-        drawBitSequence(c, N, "ask_c");
+//        drawSignalPlot(sinus, N, "sinus");
+//        drawSignalPlot(zA, N, "ask_z");
+//        drawSignalPlot(x, N, "ask_x");
+//        drawSignalPlot(p, N, "ask_p");
+//        drawBitSequence(c, N, "ask_c");
 
         int[] bits = convertToBits(c, N, Tbp);
-        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_ask");
+        for(int i = 0; i < bits.length; i++)
+            bits[i] = bits[i] == 0 ? 1 : 0;
+
+        return bits;
+//        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_ask");
     }
 
-    public static void demodulatePSK(double[] zP, int N)
+    public static int[] demodulatePSK(double[] zP, int N)
     {
         double[] sinus = generateSinus();
         int Tbp = Modulations.Tbp;
@@ -72,16 +78,16 @@ public class Demodulations
             c[n] = p[n] < 0 ? 1 : 0;
         }
 
-        drawSignalPlot(zP, N, "psk_z");
-        drawSignalPlot(x, N, "psk_x");
-        drawSignalPlot(p, N, "psk_p");
-        drawBitSequence(c, N, "psk_c");
+//        drawSignalPlot(zP, N, "psk_z");
+//        drawSignalPlot(x, N, "psk_x");
+//        drawSignalPlot(p, N, "psk_p");
+//        drawBitSequence(c, N, "psk_c");
 
-        int[] bits = convertToBits(c, N, Tbp);
-        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_psk");
+        return convertToBits(c, N, Tbp);
+//        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_psk");
     }
 
-    public static void demodulateFSK(double[] zF, int N)
+    public static int[] demodulateFSK(double[] zF, int N)
     {
         double[] sinus1 = generateSinusFSK(Modulations.fn1);
         double[] sinus2 = generateSinusFSK(Modulations.fn2);
@@ -126,16 +132,17 @@ public class Demodulations
             c[n] = p[n] > 0 ? 1 : 0;
         }
 
-        drawSignalPlot(zF, N, "fsk_z");
-        drawSignalPlot(x1, N, "fsk_x1");
-        drawSignalPlot(x2, N, "fsk_x2");
-        drawSignalPlot(p1, N, "fsk_p1");
-        drawSignalPlot(p2, N, "fsk_p2");
-        drawSignalPlot(p, N, "fsk_p");
-        drawBitSequence(c, N, "psk_c");
+//        drawSignalPlot(zF, N, "fsk_z");
+//        drawSignalPlot(x1, N, "fsk_x1");
+//        drawSignalPlot(x2, N, "fsk_x2");
+//        drawSignalPlot(p1, N, "fsk_p1");
+//        drawSignalPlot(p2, N, "fsk_p2");
+//        drawSignalPlot(p, N, "fsk_p");
+//        drawBitSequence(c, N, "fsk_c");
+//
+        return convertToBits(c, N, Tbp);
 
-        int[] bits = convertToBits(c, N, Tbp);
-        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_fsk");
+//        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_fsk");
     }
 
     public static int[] convertToBits(int[]c ,int N, int Tbp)
