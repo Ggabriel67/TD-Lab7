@@ -49,24 +49,22 @@ public class PlotDrawer extends JFrame
         saveChartAsPNG(chart, name, width, height);
     }
 
-    public PlotDrawer(double[] f, double[] MPrime, int N, String name)
+    public PlotDrawer(double[] data1, double[] data2, int N, String filename, String modulationType)
     {
-        super(name);
+        super(filename);
 
         int width = 800;
         int height = 600;
 
-        XYSeries series = new XYSeries("spectrum");
+        XYSeries series = new XYSeries(modulationType);
 
-        for (int i = 0; i < N/2 - 1; i++)
-        {
-            series.add(f[i], MPrime[i]);
-        }
+        for (int i = 0; i < N; i++)
+            series.add(data1[i], data2[i]);
 
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(series);
 
-        JFreeChart chart = ChartFactory.createXYLineChart(name, "f", "M'", dataset);
+        JFreeChart chart = ChartFactory.createXYLineChart(filename, "alpha", "BER", dataset);
 
         chart.setBackgroundPaint(Color.white);
         ChartPanel chartPanel = new ChartPanel(chart);
@@ -79,7 +77,7 @@ public class PlotDrawer extends JFrame
         setLocationRelativeTo(null);
         setVisible(true);
 
-        saveChartAsPNG(chart, name, width, height);
+        saveChartAsPNG(chart, filename, width, height);
     }
 
     public PlotDrawer(int[] data, int N, String name)
@@ -236,18 +234,23 @@ public class PlotDrawer extends JFrame
         SwingUtilities.invokeLater(() -> new PlotDrawer(data, N, name));
     }
 
-    public static void drawSpectrumPlot(double[] f, double[] MPrime, int N, String name)
-    {
-        SwingUtilities.invokeLater(() -> new PlotDrawer(f, MPrime, N, name));
-    }
+//    public static void drawSpectrumPlot(double[] f, double[] MPrime, int N, String name)
+//    {
+//        SwingUtilities.invokeLater(() -> new PlotDrawer(f, MPrime, N, name));
+//    }
 
     public static void drawBitSequence(int[] data, int N, String name)
     {
         SwingUtilities.invokeLater(() -> new PlotDrawer(data, N, name));
     }
 
-    public static void compareBitVectors(int[] data, int[] data2, int N, String name)
+    public static void compareBitVectors(int[] data1, int[] data2, int N, String name)
     {
-        SwingUtilities.invokeLater(() -> new PlotDrawer(data, data2, N, name));
+        SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, name));
+    }
+
+    public static void compareDoubles(double[] data1,double[] data2, int N, String name, String modulationType)
+    {
+        SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, name, modulationType));
     }
 }

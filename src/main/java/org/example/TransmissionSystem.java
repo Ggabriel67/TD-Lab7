@@ -4,6 +4,9 @@ import org.example.utils.Demodulations;
 import org.example.utils.Hamming_7_4;
 import org.example.utils.Modulations;
 
+import java.util.Random;
+import static java.lang.Math.*;
+
 public class TransmissionSystem
 {
     public static int[] encode(int[] bits)
@@ -16,9 +19,8 @@ public class TransmissionSystem
         {
             int[] subArray = new int[4];
             for(int j = i, k = 0; j < i + 4; j++, k++)
-            {
                 subArray[k] = bits[j];
-            }
+
             int[] encodedSubArray = Hamming_7_4.encode(subArray);
 
             int j = 0;
@@ -70,9 +72,8 @@ public class TransmissionSystem
         {
             int[] subArray = new int[7];
             for(int j = i, k = 0; j < i + 7; j++, k++)
-            {
                 subArray[k] = demodulatedBits[j];
-            }
+
             int[] decodedSubArray = Hamming_7_4.decode(subArray);
 
             int j = 0;
@@ -85,5 +86,63 @@ public class TransmissionSystem
         }
 
         return decodedBits;
+    }
+
+    public static double[] addNoiseToSignal(double[] modulatedSignal, double[] noise)
+    {
+        int N = modulatedSignal.length;
+        double[] noisedSignal = new double[N];
+
+        for(int i = 0; i < N; i++)
+            noisedSignal[i] = modulatedSignal[i] + noise[i];
+
+        return noisedSignal;
+    }
+
+    public static double[] addDampToSignal(double[] modulatedSignal, double[] damp)
+    {
+        int N = modulatedSignal.length;
+        double[] noisedSignal = new double[N];
+
+        for(int i = 0; i < N; i++)
+            noisedSignal[i] = modulatedSignal[i] * damp[i];
+
+        return noisedSignal;
+    }
+    public static double compareBitVectors(int[] originalData, int[] noisedData)
+    {
+        int N = originalData.length;
+        int E = 0;
+
+        for(int i = 0; i < N; i++)
+            if(originalData[i] != noisedData[i])
+                E++;
+
+        return (double) E / N;
+    }
+
+    public static double[] generateNoise(int length, double alpha)
+    {
+        double[] noise = new double[length];
+        Random rand = new Random();
+
+        for (int i = 0; i < length; i++)
+            noise[i] = rand.nextDouble(-4, 4) * alpha;
+
+        return noise;
+    }
+
+    public static double[] generateDamping(int length, double beta)
+    {
+        double[] damp = new double[length];
+        Random rand = new Random();
+
+        for (int i = 0; i < length; i++)
+        {
+            double t = (double) i / Modulations.fs;
+            damp[i] = exp(-beta * t);
+        }
+
+        return damp;
     }
 }
