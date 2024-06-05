@@ -127,7 +127,7 @@ public class TransmissionSystem
         Random rand = new Random();
 
         for (int i = 0; i < length; i++)
-            noise[i] = rand.nextDouble(-4, 4) * alpha;
+            noise[i] = rand.nextDouble(-10, 10) * alpha;
 
         return noise;
     }
@@ -135,7 +135,6 @@ public class TransmissionSystem
     public static double[] generateDamping(int length, double beta)
     {
         double[] damp = new double[length];
-        Random rand = new Random();
 
         for (int i = 0; i < length; i++)
         {

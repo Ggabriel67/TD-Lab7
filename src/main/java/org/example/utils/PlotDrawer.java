@@ -49,14 +49,14 @@ public class PlotDrawer extends JFrame
         saveChartAsPNG(chart, name, width, height);
     }
 
-    public PlotDrawer(double[] data1, double[] data2, int N, String filename, String modulationType)
+    public PlotDrawer(double[] data1,double[] data2, int N, String plotName, String filename)
     {
         super(filename);
 
         int width = 800;
         int height = 600;
 
-        XYSeries series = new XYSeries(modulationType);
+        XYSeries series = new XYSeries("dependency");
 
         for (int i = 0; i < N; i++)
             series.add(data1[i], data2[i]);
@@ -64,7 +64,7 @@ public class PlotDrawer extends JFrame
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(series);
 
-        JFreeChart chart = ChartFactory.createXYLineChart(filename, "alpha", "BER", dataset);
+        JFreeChart chart = ChartFactory.createXYLineChart(plotName, "alpha", "BER", dataset);
 
         chart.setBackgroundPaint(Color.white);
         ChartPanel chartPanel = new ChartPanel(chart);
@@ -249,8 +249,8 @@ public class PlotDrawer extends JFrame
         SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, name));
     }
 
-    public static void compareDoubles(double[] data1,double[] data2, int N, String name, String modulationType)
+    public static void compareDoubles(double[] data1,double[] data2, int N, String plotName, String filename)
     {
-        SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, name, modulationType));
+        SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, plotName, filename));
     }
 }

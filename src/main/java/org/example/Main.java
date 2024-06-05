@@ -14,9 +14,9 @@ public class Main
     public static void main(String[] args)
     {
 //        zadanie1();
-//        zadanie2();
-//        zadanie3();
-        alphaBerTests();
+        zadanie2();
+        zadanie3();
+//        zadanie4();
     }
 
     public static void zadanie1()
@@ -43,109 +43,16 @@ public class Main
 
     public static void zadanie2()
     {
-        System.out.println("Original data:");
-        printBits(bits);
-
-        int[] encodedBits = TransmissionSystem.encode(bits);
-        System.out.println("Encoded data:");
-        printBits(encodedBits);
-
-        final String ASK = "ASK";
-        final String PSK = "PSK";
-        final String FSK = "FSK";
-        double[] modulationASK = TransmissionSystem.modulate(encodedBits, ASK);
-        double[] modulationPSK = TransmissionSystem.modulate(encodedBits, PSK);
-        double[] modulationFSK = TransmissionSystem.modulate(encodedBits, FSK);
-
-        double alpha = 6; // alpha = [0 : 1]
-        double[] noise = TransmissionSystem.generateNoise(modulationASK.length, alpha);
-        double[] noisedASK = TransmissionSystem.addNoiseToSignal(modulationASK, noise);
-        double[] noisedPSK = TransmissionSystem.addNoiseToSignal(modulationPSK, noise);
-        double[] noisedFSK = TransmissionSystem.addNoiseToSignal(modulationFSK, noise);
-
-        int[] demodulatedNoisedASK = TransmissionSystem.demodulate(noisedASK, ASK);
-        int[] demodulatedNoisedPSK = TransmissionSystem.demodulate(noisedPSK, PSK);
-        int[] demodulatedNoisedFSK = TransmissionSystem.demodulate(noisedFSK, FSK);
-
-        int[] decodedNoisedASK = TransmissionSystem.decode(demodulatedNoisedASK);
-        int[] decodedNoisedPSK = TransmissionSystem.decode(demodulatedNoisedPSK);
-        int[] decodedNoisedFSK = TransmissionSystem.decode(demodulatedNoisedFSK);
-
-        double BER_ASK = TransmissionSystem.compareBitVectors(bits, decodedNoisedASK);
-        double BER_PSK = TransmissionSystem.compareBitVectors(bits, decodedNoisedPSK);
-        double BER_FSK = TransmissionSystem.compareBitVectors(bits, decodedNoisedFSK);
-        System.out.println("BER ASK: " + BER_ASK);
-        System.out.println("BER PSK: " + BER_PSK);
-        System.out.println("BER FSK: " + BER_FSK);
-
-        System.out.println("Decoded noised ASK");
-        printBits(decodedNoisedASK);
-        System.out.println("Decoded noised PSK");
-        printBits(decodedNoisedPSK);
-        System.out.println("Decoded noised FSK");
-        printBits(decodedNoisedFSK);
-    }
-
-    public static void zadanie3()
-    {
-        System.out.println("Original data:");
-        printBits(bits);
-
-        int[] encodedBits = TransmissionSystem.encode(bits);
-        System.out.println("Encoded data:");
-        printBits(encodedBits);
-
-        final String ASK = "ASK";
-        final String PSK = "PSK";
-        final String FSK = "FSK";
-
-        double[] modulationASK = TransmissionSystem.modulate(encodedBits, ASK);
-        double[] modulationPSK = TransmissionSystem.modulate(encodedBits, PSK);
-        double[] modulationFSK = TransmissionSystem.modulate(encodedBits, FSK);
-
-        double beta = 10; // beta = [0 : 10]
-        double[] damp = TransmissionSystem.generateDamping(modulationASK.length, beta);
-        double[] dampedASK = TransmissionSystem.addDampToSignal(modulationASK, damp);
-        double[] dampedPSK = TransmissionSystem.addDampToSignal(modulationPSK, damp);
-        double[] dampedFSK = TransmissionSystem.addDampToSignal(modulationFSK, damp);
-
-        int[] demodulatedDampedASK = TransmissionSystem.demodulate(dampedASK, ASK);
-        int[] demodulatedDampedPSK = TransmissionSystem.demodulate(dampedPSK, PSK);
-        int[] demodulatedDampedFSK = TransmissionSystem.demodulate(dampedFSK, FSK);
-
-        int[] decodedDampedASK = TransmissionSystem.decode(demodulatedDampedASK);
-        int[] decodedDampedPSK = TransmissionSystem.decode(demodulatedDampedPSK);
-        int[] decodedDampedFSK = TransmissionSystem.decode(demodulatedDampedFSK);
-
-        double BER_ASK = TransmissionSystem.compareBitVectors(bits, decodedDampedASK);
-        double BER_PSK = TransmissionSystem.compareBitVectors(bits, decodedDampedPSK);
-        double BER_FSK = TransmissionSystem.compareBitVectors(bits, decodedDampedFSK);
-        System.out.println("BER ASK: " + BER_ASK);
-        System.out.println("BER PSK: " + BER_PSK);
-        System.out.println("BER FSK: " + BER_FSK);
-
-        System.out.println("Decoded noised ASK");
-        printBits(decodedDampedASK);
-        System.out.println("Decoded noised PSK");
-        printBits(decodedDampedPSK);
-        System.out.println("Decoded noised FSK");
-        printBits(decodedDampedFSK);
-    }
-
-    public static void zadanie4()
-    {
-
-    }
-
-    public static void alphaBerTests() {
         int[] encodedBits = TransmissionSystem.encode(bits);
 
-        final String ASK = "ASK";
-        final String PSK = "PSK";
-        final String FSK = "FSK";
         final String[] modulationTypes = {"ASK", "PSK", "FSK"};
 
-        double[] alpha = {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+        double step = 0.01;
+        double[] alpha = new double[(int) Math.floor(1 / step)];
+        alpha[0] = 0;
+        for (int i = 1; i < alpha.length; i++)
+            alpha[i] = alpha[i - 1] + step;
+
         double[][] BER = new double[3][alpha.length];
         double[][] modulations = new double[3][];
         double[][] noisedModulations = new double[3][];
@@ -166,9 +73,52 @@ public class Main
             }
         }
 
-        PlotDrawer.compareDoubles(alpha, BER[0], alpha.length, "alpha_ASK", "ASK");
-        PlotDrawer.compareDoubles(alpha, BER[1], alpha.length, "alpha_PSK", "PSK");
-        PlotDrawer.compareDoubles(alpha, BER[2], alpha.length, "alpha_FSK", "FSK");
+        PlotDrawer.compareDoubles(alpha, BER[0], alpha.length, "Alpha and BER dependency (ASK)", "alpha_ASK");
+        PlotDrawer.compareDoubles(alpha, BER[1], alpha.length, "Alpha and BER dependency (PSK)", "alpha_PSK");
+        PlotDrawer.compareDoubles(alpha, BER[2], alpha.length, "Alpha and BER dependency (FSK)", "alpha_FSK");
+    }
+
+    public static void zadanie3()
+    {
+        int[] encodedBits = TransmissionSystem.encode(bits);
+
+        final String[] modulationTypes = {"ASK", "PSK", "FSK"};
+
+        double step = 0.05;
+        int maxValue = 100;
+        double[] beta = new double[(int) Math.floor(maxValue / step)];
+        beta[0] = 0;
+        for (int i = 1; i < beta.length; i++)
+            beta[i] = beta[i - 1] + step;
+
+        double[][] BER = new double[3][beta.length];
+        double[][] modulations = new double[3][];
+        double[][] noisedModulations = new double[3][];
+        int[][] demodulations = new int[3][];
+        int[][] decodedData = new int[3][];
+
+        int modulationLength = (TransmissionSystem.modulate(bits, "ASK")).length;
+        for (int i = 0; i < beta.length; i++)
+        {
+            double[] noise = TransmissionSystem.generateDamping(modulationLength, beta[i]);
+            for (int j = 0; j < 3; j++)
+            {
+                modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
+                noisedModulations[j] = TransmissionSystem.addDampToSignal(modulations[j], noise);
+                demodulations[j] = TransmissionSystem.demodulate(noisedModulations[j], modulationTypes[j]);
+                decodedData[j] = TransmissionSystem.decode(demodulations[j]);
+                BER[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
+            }
+        }
+
+        PlotDrawer.compareDoubles(beta, BER[0], beta.length, "Beta and BER dependency (ASK)", "beta_ASK");
+        PlotDrawer.compareDoubles(beta, BER[1], beta.length, "Beta and BER dependency (PSK)", "beta_PSK");
+        PlotDrawer.compareDoubles(beta, BER[2], beta.length, "Beta and BER dependency (FSK)", "beta_FSK");
+    }
+
+    public static void zadanie4()
+    {
+
     }
 
     public static void printBits(int[] data)
