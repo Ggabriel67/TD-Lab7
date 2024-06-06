@@ -49,7 +49,7 @@ public class PlotDrawer extends JFrame
         saveChartAsPNG(chart, name, width, height);
     }
 
-    public PlotDrawer(double[] data1,double[] data2, int N, String plotName, String filename)
+    public PlotDrawer(double[] data1,double[] data2, int N, String type, String plotName, String filename)
     {
         super(filename);
 
@@ -64,7 +64,7 @@ public class PlotDrawer extends JFrame
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(series);
 
-        JFreeChart chart = ChartFactory.createXYLineChart(plotName, "alpha", "BER", dataset);
+        JFreeChart chart = ChartFactory.createXYLineChart(plotName, type, "BER", dataset);
 
         chart.setBackgroundPaint(Color.white);
         ChartPanel chartPanel = new ChartPanel(chart);
@@ -249,8 +249,8 @@ public class PlotDrawer extends JFrame
         SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, name));
     }
 
-    public static void compareDoubles(double[] data1,double[] data2, int N, String plotName, String filename)
+    public static void compareDoubles(double[] data1,double[] data2, int N, String type, String plotName, String filename)
     {
-        SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, plotName, filename));
+        SwingUtilities.invokeLater(() -> new PlotDrawer(data1, data2, N, type, plotName, filename));
     }
 }

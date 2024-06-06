@@ -14,9 +14,9 @@ public class Main
     public static void main(String[] args)
     {
 //        zadanie1();
-        zadanie2();
-        zadanie3();
-//        zadanie4();
+//        zadanie2();
+//        zadanie3();
+        zadanie4();
     }
 
     public static void zadanie1()
@@ -73,9 +73,9 @@ public class Main
             }
         }
 
-        PlotDrawer.compareDoubles(alpha, BER[0], alpha.length, "Alpha and BER dependency (ASK)", "alpha_ASK");
-        PlotDrawer.compareDoubles(alpha, BER[1], alpha.length, "Alpha and BER dependency (PSK)", "alpha_PSK");
-        PlotDrawer.compareDoubles(alpha, BER[2], alpha.length, "Alpha and BER dependency (FSK)", "alpha_FSK");
+        PlotDrawer.compareDoubles(alpha, BER[0], alpha.length, "alpha", "Alpha and BER dependency (ASK)", "alpha_ASK");
+        PlotDrawer.compareDoubles(alpha, BER[1], alpha.length, "alpha", "Alpha and BER dependency (PSK)", "alpha_PSK");
+        PlotDrawer.compareDoubles(alpha, BER[2], alpha.length, "alpha", "Alpha and BER dependency (FSK)", "alpha_FSK");
     }
 
     public static void zadanie3()
@@ -93,7 +93,7 @@ public class Main
 
         double[][] BER = new double[3][beta.length];
         double[][] modulations = new double[3][];
-        double[][] noisedModulations = new double[3][];
+        double[][] dampedModulations = new double[3][];
         int[][] demodulations = new int[3][];
         int[][] decodedData = new int[3][];
 
@@ -104,20 +104,76 @@ public class Main
             for (int j = 0; j < 3; j++)
             {
                 modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
-                noisedModulations[j] = TransmissionSystem.addDampToSignal(modulations[j], noise);
-                demodulations[j] = TransmissionSystem.demodulate(noisedModulations[j], modulationTypes[j]);
+                dampedModulations[j] = TransmissionSystem.addDampToSignal(modulations[j], noise);
+                demodulations[j] = TransmissionSystem.demodulate(dampedModulations[j], modulationTypes[j]);
                 decodedData[j] = TransmissionSystem.decode(demodulations[j]);
                 BER[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
             }
         }
 
-        PlotDrawer.compareDoubles(beta, BER[0], beta.length, "Beta and BER dependency (ASK)", "beta_ASK");
-        PlotDrawer.compareDoubles(beta, BER[1], beta.length, "Beta and BER dependency (PSK)", "beta_PSK");
-        PlotDrawer.compareDoubles(beta, BER[2], beta.length, "Beta and BER dependency (FSK)", "beta_FSK");
+        PlotDrawer.compareDoubles(beta, BER[0], beta.length, "beta", "Beta and BER dependency (ASK)", "beta_ASK");
+        PlotDrawer.compareDoubles(beta, BER[1], beta.length, "beta", "Beta and BER dependency (PSK)", "beta_PSK");
+        PlotDrawer.compareDoubles(beta, BER[2], beta.length, "beta", "Beta and BER dependency (FSK)", "beta_FSK");
     }
 
     public static void zadanie4()
     {
+        int[] encodedBits = TransmissionSystem.encode(bits);
+
+        final String[] modulationTypes = {"ASK", "PSK", "FSK"};
+
+        double alphaStep = 0.01;
+        double[] alpha = new double[(int) Math.floor(1 / alphaStep)];
+        alpha[0] = 0;
+        for (int i = 1; i < alpha.length; i++)
+            alpha[i] = alpha[i - 1] + alphaStep;
+
+        double betaStep = 1;
+        int maxValue = 100;
+        double[] beta = new double[(int) Math.floor(maxValue / betaStep)];
+        beta[0] = 0;
+        for (int i = 1; i < beta.length; i++)
+            beta[i] = beta[i - 1] + betaStep;
+
+        double[][] BER_I_II = new double[3][alpha.length];
+        double[][] BER_II_I = new double[3][alpha.length];
+        double[][] modulations = new double[3][];
+        double[][] noisedModulations = new double[3][];
+        double[][] dampedModulations = new double[3][];
+        int[][] demodulations = new int[3][];
+        int[][] decodedData = new int[3][];
+
+        int modulationLength = (TransmissionSystem.modulate(bits, "ASK")).length;
+
+        for (int i = 0; i < alpha.length; i++)
+        {
+            double[] noise = TransmissionSystem.generateDamping(modulationLength, alpha[i]);
+            double[] damp = TransmissionSystem.generateDamping(modulationLength, beta[i]);
+            for (int j = 0; j < 3; j++)
+            {
+                modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
+                noisedModulations[j] = TransmissionSystem.addNoiseToSignal(modulations[j], noise);
+                dampedModulations[j] = TransmissionSystem.addDampToSignal(noisedModulations[j], damp);
+                demodulations[j] = TransmissionSystem.demodulate(dampedModulations[j], modulationTypes[j]);
+                decodedData[j] = TransmissionSystem.decode(demodulations[j]);
+                BER_I_II[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
+            }
+        }
+
+        for (int i = 0; i < alpha.length; i++)
+        {
+            double[] noise = TransmissionSystem.generateDamping(modulationLength, alpha[i]);
+            double[] damp = TransmissionSystem.generateDamping(modulationLength, beta[i]);
+            for (int j = 0; j < 3; j++)
+            {
+                modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
+                noisedModulations[j] = TransmissionSystem.addNoiseToSignal(modulations[j], noise);
+                dampedModulations[j] = TransmissionSystem.addDampToSignal(noisedModulations[j], damp);
+                demodulations[j] = TransmissionSystem.demodulate(dampedModulations[j], modulationTypes[j]);
+                decodedData[j] = TransmissionSystem.decode(demodulations[j]);
+                BER_II_I[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
+            }
+        }
 
     }
 
@@ -130,7 +186,6 @@ public class Main
         System.out.println();
     }
 
-    // Utils
     public static void printData(double[] data)
     {
         for(double i : data)
