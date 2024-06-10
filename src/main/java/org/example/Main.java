@@ -14,9 +14,9 @@ public class Main
     public static void main(String[] args)
     {
 //        zadanie1();
-//        zadanie2();
-//        zadanie3();
-        zadanie4();
+        zadanie2();
+        zadanie3();
+//        zadanie4();
     }
 
     public static void zadanie1()
@@ -59,14 +59,18 @@ public class Main
         int[][] demodulations = new int[3][];
         int[][] decodedData = new int[3][];
 
-        double[] testModulation = TransmissionSystem.modulate(bits, "ASK");
+        int modulationLength = (TransmissionSystem.modulate(bits, "ASK")).length;
+
+        double[][] noise = new double[alpha.length][modulationLength];
+        for(int i = 0; i < alpha.length; i++)
+            noise[i] = TransmissionSystem.generateNoise(modulationLength, alpha[i]);
+
         for (int i = 0; i < alpha.length; i++)
         {
-            double[] noise = TransmissionSystem.generateNoise(testModulation.length, alpha[i]);
             for (int j = 0; j < 3; j++)
             {
                 modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
-                noisedModulations[j] = TransmissionSystem.addNoiseToSignal(modulations[j], noise);
+                noisedModulations[j] = TransmissionSystem.addNoiseToSignal(modulations[j], noise[i]);
                 demodulations[j] = TransmissionSystem.demodulate(noisedModulations[j], modulationTypes[j]);
                 decodedData[j] = TransmissionSystem.decode(demodulations[j]);
                 BER[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
@@ -98,13 +102,17 @@ public class Main
         int[][] decodedData = new int[3][];
 
         int modulationLength = (TransmissionSystem.modulate(bits, "ASK")).length;
+
+        double[][] damp = new double[beta.length][modulationLength];
+        for(int i = 0; i < damp.length; i++)
+            damp[i] = TransmissionSystem.generateDamping(modulationLength, beta[i]);
+
         for (int i = 0; i < beta.length; i++)
         {
-            double[] noise = TransmissionSystem.generateDamping(modulationLength, beta[i]);
             for (int j = 0; j < 3; j++)
             {
                 modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
-                dampedModulations[j] = TransmissionSystem.addDampToSignal(modulations[j], noise);
+                dampedModulations[j] = TransmissionSystem.addDampToSignal(modulations[j], damp[i]);
                 demodulations[j] = TransmissionSystem.demodulate(dampedModulations[j], modulationTypes[j]);
                 decodedData[j] = TransmissionSystem.decode(demodulations[j]);
                 BER[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
@@ -135,8 +143,15 @@ public class Main
         for (int i = 1; i < beta.length; i++)
             beta[i] = beta[i - 1] + betaStep;
 
-        double[][] BER_I_II = new double[3][alpha.length];
-        double[][] BER_II_I = new double[3][alpha.length];
+        int alphaLength = alpha.length;
+        int betaLength = beta.length;
+
+        double[][] BER_I_II_ASK = new double[alphaLength][betaLength];
+        double[][] BER_II_I_ASK = new double[alphaLength][betaLength];
+        double[][] BER_I_II_PSK = new double[alphaLength][betaLength];
+        double[][] BER_II_I_PSK = new double[alphaLength][betaLength];
+        double[][] BER_I_II_FSK = new double[alphaLength][betaLength];
+        double[][] BER_II_I_FSK = new double[alphaLength][betaLength];
         double[][] modulations = new double[3][];
         double[][] noisedModulations = new double[3][];
         double[][] dampedModulations = new double[3][];
@@ -145,36 +160,55 @@ public class Main
 
         int modulationLength = (TransmissionSystem.modulate(bits, "ASK")).length;
 
-        for (int i = 0; i < alpha.length; i++)
+        double[][] noise = new double[alphaLength][modulationLength];
+        double[][] damp = new double[betaLength][modulationLength];
+        for(int i = 0; i < alphaLength; i++)
+            noise[i] = TransmissionSystem.generateDamping(modulationLength, alpha[i]);
+
+        for(int i = 0; i < betaLength; i++)
+            damp[i] = TransmissionSystem.generateDamping(modulationLength, beta[i]);
+
+        for(int i = 0; i < 3; i++)
         {
-            double[] noise = TransmissionSystem.generateDamping(modulationLength, alpha[i]);
-            double[] damp = TransmissionSystem.generateDamping(modulationLength, beta[i]);
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < alphaLength; j++)
             {
-                modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
-                noisedModulations[j] = TransmissionSystem.addNoiseToSignal(modulations[j], noise);
-                dampedModulations[j] = TransmissionSystem.addDampToSignal(noisedModulations[j], damp);
-                demodulations[j] = TransmissionSystem.demodulate(dampedModulations[j], modulationTypes[j]);
-                decodedData[j] = TransmissionSystem.decode(demodulations[j]);
-                BER_I_II[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
+                for (int k = 0; k < betaLength; k++)
+                {
+                    modulations[i] = TransmissionSystem.modulate(encodedBits, modulationTypes[i]);
+                    noisedModulations[i] = TransmissionSystem.addNoiseToSignal(modulations[i], noise[j]);
+                    dampedModulations[i] = TransmissionSystem.addDampToSignal(noisedModulations[i], damp[j]);
+                    demodulations[i] = TransmissionSystem.demodulate(dampedModulations[i], modulationTypes[i]);
+                    decodedData[i] = TransmissionSystem.decode(demodulations[i]);
+                    switch(i)
+                    {
+                        case 0 -> BER_I_II_ASK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 1 -> BER_I_II_PSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 2 -> BER_I_II_FSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                    }
+                }
             }
         }
 
-        for (int i = 0; i < alpha.length; i++)
+        for(int i = 0; i < 3; i++)
         {
-            double[] noise = TransmissionSystem.generateDamping(modulationLength, alpha[i]);
-            double[] damp = TransmissionSystem.generateDamping(modulationLength, beta[i]);
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < alphaLength; j++)
             {
-                modulations[j] = TransmissionSystem.modulate(encodedBits, modulationTypes[j]);
-                noisedModulations[j] = TransmissionSystem.addNoiseToSignal(modulations[j], noise);
-                dampedModulations[j] = TransmissionSystem.addDampToSignal(noisedModulations[j], damp);
-                demodulations[j] = TransmissionSystem.demodulate(dampedModulations[j], modulationTypes[j]);
-                decodedData[j] = TransmissionSystem.decode(demodulations[j]);
-                BER_II_I[j][i] = TransmissionSystem.compareBitVectors(bits, decodedData[j]);
+                for (int k = 0; k < betaLength; k++)
+                {
+                    modulations[i] = TransmissionSystem.modulate(encodedBits, modulationTypes[i]);
+                    noisedModulations[i] = TransmissionSystem.addDampToSignal(modulations[i], noise[j]);
+                    dampedModulations[i] = TransmissionSystem.addNoiseToSignal(noisedModulations[i], damp[j]);
+                    demodulations[i] = TransmissionSystem.demodulate(dampedModulations[i], modulationTypes[i]);
+                    decodedData[i] = TransmissionSystem.decode(demodulations[i]);
+                    switch(i)
+                    {
+                        case 0 -> BER_I_II_ASK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 1 -> BER_I_II_PSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 2 -> BER_I_II_FSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                    }
+                }
             }
         }
-
     }
 
     public static void printBits(int[] data)
@@ -184,26 +218,5 @@ public class Main
 
         System.out.println();
         System.out.println();
-    }
-
-    public static void printData(double[] data)
-    {
-        for(double i : data)
-            System.out.print(i + " ");
-
-        System.out.println();
-        System.out.println();
-    }
-
-    public static int[] stringToBits(String input)
-    {
-        int[] bitArray = new int[input.length() * 8];
-
-        int index = 0;
-        for (char c : input.toCharArray())
-            for (int i = 7; i >= 0; i--)
-                bitArray[index++] = ((int) c >> i) & 1;
-
-        return bitArray;
     }
 }
