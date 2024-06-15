@@ -44,7 +44,7 @@ public class Demodulations
 //        drawSignalPlot(p, N, "ask_p");
 //        drawBitSequence(c, N, "ask_c");
 
-        int[] bits = convertToBits(c, N, Tbp);
+        int[] bits = convertToBits(c);
         for(int i = 0; i < bits.length; i++)
             bits[i] = bits[i] == 0 ? 1 : 0;
 
@@ -83,7 +83,7 @@ public class Demodulations
 //        drawSignalPlot(p, N, "psk_p");
 //        drawBitSequence(c, N, "psk_c");
 
-        return convertToBits(c, N, Tbp);
+        return convertToBits(c);
 //        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_psk");
     }
 
@@ -140,27 +140,56 @@ public class Demodulations
 //        drawSignalPlot(p, N, "fsk_p");
 //        drawBitSequence(c, N, "fsk_c");
 //
-        return convertToBits(c, N, Tbp);
-
+        return convertToBits(c);
 //        compareBitVectors(Modulations.b, bits, bits.length, "porownanie_fsk");
     }
 
-    public static int[] convertToBits(int[]c ,int N, int Tbp)
+    public static int[] convertToBits(int[]c)
     {
         double db = 0;
         List<Integer> bits = new ArrayList<>();
-        for(int i = 0; i < N; i++)
+        for(int i = 0; i < c.length; i++)
         {
+            if(bits.size() >= M)
+                break;
+
             db += c[i];
             if((i % Tbp) == 0 && i != 0)
             {
-                bits.add((db / Tbp) > 0.2 ? 1 : 0);
+                bits.add((db / Tbp) > 0.3 ? 1 : 0);
                 db = 0;
             }
         }
 
-        int[] b = new int[bits.size()];
-        for(int i = 0; i < b.length; i++) b[i] = bits.get(i);
+        return bits.stream().mapToInt(i -> i).toArray();
+    }
+
+    static public int[] ConvertBitStreamToBitStream(int[] bit_signal)
+    {
+        List<Integer> bit_stream = new ArrayList<>();
+        int N = (int)(fs * Tb);
+
+        int sum;
+        int bit = -1;
+        for (int b = 0; b < M; b++)
+        {
+            sum = 0;
+            for (int n = 0; n < N; n++)
+            {
+                sum += (int)bit_signal[b * N + n];
+                if (sum > 0)
+                {
+                    bit = 1;
+                }
+                else if (sum == 0)
+                {
+                    bit = 0;
+                }
+            }
+            bit_stream.add(bit);
+        }
+        int[] b = new int[bit_stream.size()];
+        for(int i = 0; i < b.length; i++) b[i] = bit_stream.get(i);
 
         return b;
     }

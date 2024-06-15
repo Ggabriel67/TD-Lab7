@@ -109,13 +109,14 @@ public class TransmissionSystem
 
         return noisedSignal;
     }
-    public static double compareBitVectors(int[] originalData, int[] noisedData)
+
+    public static double compareBitVectors(int[] originalData, int[] alteredData)
     {
         int N = originalData.length;
         int E = 0;
 
         for(int i = 0; i < N; i++)
-            if(originalData[i] != noisedData[i])
+            if(originalData[i] != alteredData[i])
                 E++;
 
         return (double) E / N;

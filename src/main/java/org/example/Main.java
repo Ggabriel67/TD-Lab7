@@ -3,19 +3,24 @@ package org.example;
 import org.example.utils.PlotDrawer;
 import org.jfree.chart.plot.Plot;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class Main
 {
     public static int[] bits = {
             1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1,
             1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1,
-            1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1
+            1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1,     1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1,
+            1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+            0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1
     };
 
     public static void main(String[] args)
     {
-//        zadanie1();
-        zadanie2();
-        zadanie3();
+        zadanie1();
+//        zadanie2();
+//        zadanie3();
 //        zadanie4();
     }
 
@@ -28,17 +33,37 @@ public class Main
         System.out.println("Encoded data:");
         printBits(encodedBits);
 
-        String modulationType = "FSK";
-        System.out.println("Modulation type: " + modulationType);
-        double[] modulatedBits = TransmissionSystem.modulate(encodedBits, modulationType);
+        final String ASK = "ASK", PSK = "PSK", FSK = "FSK";
+        double[] modulatedBitsASK = TransmissionSystem.modulate(encodedBits, ASK);
+        double[] modulatedBitsPSK = TransmissionSystem.modulate(encodedBits, PSK);
+        double[] modulatedBitsFSK = TransmissionSystem.modulate(encodedBits, FSK);
 
-        int[] demodulatedBits = TransmissionSystem.demodulate(modulatedBits, modulationType);
-        System.out.println("Demodulated data:");
-        printBits(demodulatedBits);
+        int[] demodulatedBitsASK = TransmissionSystem.demodulate(modulatedBitsASK, ASK);
+        int[] demodulatedBitsPSK = TransmissionSystem.demodulate(modulatedBitsPSK, PSK);
+        int[] demodulatedBitsFSK = TransmissionSystem.demodulate(modulatedBitsFSK, FSK);
 
-        int[] decodedBits = TransmissionSystem.decode(demodulatedBits);
-        System.out.println("Decoded data:");
-        printBits(decodedBits);
+        System.out.println("Demodulated data (ASK):");
+        printBits(demodulatedBitsASK);
+        System.out.println("Demodulated data (PSK):");
+        printBits(demodulatedBitsPSK);
+        System.out.println("Demodulated data (FSK):");
+        printBits(demodulatedBitsFSK);
+
+        int[] decodedBitsASK = TransmissionSystem.decode(demodulatedBitsASK);
+        int[] decodedBitsPSK = TransmissionSystem.decode(demodulatedBitsPSK);
+        int[] decodedBitsFSK = TransmissionSystem.decode(demodulatedBitsFSK);
+
+        double[] BER = new double[3];
+        BER[0] = TransmissionSystem.compareBitVectors(bits, decodedBitsASK);
+        BER[1] = TransmissionSystem.compareBitVectors(bits, decodedBitsPSK);
+        BER[2] = TransmissionSystem.compareBitVectors(bits, decodedBitsFSK);
+
+        System.out.println("Decoded data (ASK): BER = " + BER[0]);
+        printBits(decodedBitsASK);
+        System.out.println("Decoded data (PSK): BER = " + BER[1]);
+        printBits(decodedBitsPSK);
+        System.out.println("Decoded data (FSK): BER = " + BER[2]);
+        printBits(decodedBitsFSK);
     }
 
     public static void zadanie2()
@@ -47,7 +72,7 @@ public class Main
 
         final String[] modulationTypes = {"ASK", "PSK", "FSK"};
 
-        double step = 0.01;
+        double step = 0.02;
         double[] alpha = new double[(int) Math.floor(1 / step)];
         alpha[0] = 0;
         for (int i = 1; i < alpha.length; i++)
@@ -88,8 +113,8 @@ public class Main
 
         final String[] modulationTypes = {"ASK", "PSK", "FSK"};
 
-        double step = 0.05;
-        int maxValue = 100;
+        double step = 0.2;
+        int maxValue = 10;
         double[] beta = new double[(int) Math.floor(maxValue / step)];
         beta[0] = 0;
         for (int i = 1; i < beta.length; i++)
@@ -130,14 +155,14 @@ public class Main
 
         final String[] modulationTypes = {"ASK", "PSK", "FSK"};
 
-        double alphaStep = 0.01;
+        double alphaStep = 0.02;
         double[] alpha = new double[(int) Math.floor(1 / alphaStep)];
         alpha[0] = 0;
         for (int i = 1; i < alpha.length; i++)
             alpha[i] = alpha[i - 1] + alphaStep;
 
-        double betaStep = 1;
-        int maxValue = 100;
+        double betaStep = 0.2;
+        int maxValue = 10;
         double[] beta = new double[(int) Math.floor(maxValue / betaStep)];
         beta[0] = 0;
         for (int i = 1; i < beta.length; i++)
@@ -176,7 +201,7 @@ public class Main
                 {
                     modulations[i] = TransmissionSystem.modulate(encodedBits, modulationTypes[i]);
                     noisedModulations[i] = TransmissionSystem.addNoiseToSignal(modulations[i], noise[j]);
-                    dampedModulations[i] = TransmissionSystem.addDampToSignal(noisedModulations[i], damp[j]);
+                    dampedModulations[i] = TransmissionSystem.addDampToSignal(noisedModulations[i], damp[k]);
                     demodulations[i] = TransmissionSystem.demodulate(dampedModulations[i], modulationTypes[i]);
                     decodedData[i] = TransmissionSystem.decode(demodulations[i]);
                     switch(i)
@@ -196,19 +221,87 @@ public class Main
                 for (int k = 0; k < betaLength; k++)
                 {
                     modulations[i] = TransmissionSystem.modulate(encodedBits, modulationTypes[i]);
-                    noisedModulations[i] = TransmissionSystem.addDampToSignal(modulations[i], noise[j]);
+                    noisedModulations[i] = TransmissionSystem.addDampToSignal(modulations[i], noise[k]);
                     dampedModulations[i] = TransmissionSystem.addNoiseToSignal(noisedModulations[i], damp[j]);
                     demodulations[i] = TransmissionSystem.demodulate(dampedModulations[i], modulationTypes[i]);
                     decodedData[i] = TransmissionSystem.decode(demodulations[i]);
                     switch(i)
                     {
-                        case 0 -> BER_I_II_ASK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
-                        case 1 -> BER_I_II_PSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
-                        case 2 -> BER_I_II_FSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 0 -> BER_II_I_ASK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 1 -> BER_II_I_PSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
+                        case 2 -> BER_II_I_FSK[j][k] = TransmissionSystem.compareBitVectors(bits, decodedData[i]);
                     }
                 }
             }
         }
+
+        try {
+            FileWriter ASK_I_II = new FileWriter("ber_files/ASK_I_II.csv");
+            FileWriter PSK_I_II = new FileWriter("ber_files/PSK_I_II.csv");
+            FileWriter FSK_I_II = new FileWriter("ber_files/FSK_I_II.csv");
+            FileWriter ASK_II_I = new FileWriter("ber_files/ASK_II_I.csv");
+            FileWriter PSK_II_I = new FileWriter("ber_files/PSK_II_I.csv");
+            FileWriter FSK_II_I = new FileWriter("ber_files/FSK_II_I.csv");
+
+            FileWriter ALPHA = new FileWriter("ber_files/alpha.csv");
+            FileWriter BETA = new FileWriter("ber_files/beta.csv");
+
+            int N = BER_I_II_ASK[0].length;
+
+            System.out.println("N = " + N);
+
+            for(int i = 0; i < N; i++)
+            {
+                if(i == N - 1)
+                {
+                    ALPHA.write(alpha[i] + "\n");
+                    BETA.write(beta[i] + "\n");
+                }
+                else
+                {
+                    ALPHA.write(alpha[i] + ",");
+                    BETA.write(beta[i] + ",");
+                }
+            }
+            ALPHA.close();
+            BETA.close();
+
+            for(int i = 0; i < N; i++)
+            {
+                for(int j = 0; j < N; j++)
+                {
+                    if(j == N - 1)
+                    {
+                        ASK_I_II.write(BER_I_II_ASK[i][j] + "\n");
+                        PSK_I_II.write(BER_I_II_PSK[i][j] + "\n");
+                        FSK_I_II.write(BER_I_II_FSK[i][j] + "\n");
+                        ASK_II_I.write(BER_II_I_ASK[i][j] + "\n");
+                        PSK_II_I.write(BER_II_I_PSK[i][j] + "\n");
+                        FSK_II_I.write(BER_II_I_FSK[i][j] + "\n");
+                    }
+                    else
+                    {
+                        ASK_I_II.write(BER_I_II_ASK[i][j] + ",");
+                        PSK_I_II.write(BER_I_II_PSK[i][j] + ",");
+                        FSK_I_II.write(BER_I_II_FSK[i][j] + ",");
+                        ASK_II_I.write(BER_II_I_ASK[i][j] + ",");
+                        PSK_II_I.write(BER_II_I_PSK[i][j] + ",");
+                        FSK_II_I.write(BER_II_I_FSK[i][j] + ",");
+                    }
+                }
+            }
+            ASK_I_II.close();
+            PSK_I_II.close();
+            FSK_I_II.close();
+            ASK_II_I.close();
+            PSK_II_I.close();
+            FSK_II_I.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("KONIEC");
     }
 
     public static void printBits(int[] data)

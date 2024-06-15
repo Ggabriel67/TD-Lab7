@@ -1,0 +1,6 @@
+Z sygnałem który został zaszumiony najlepiej radzi sobie PSK. Najgorzej radzi sobie z tym zadaniem ASK.
+Natomiast skuteczność FSK rośnie przy zwiększeniu częstotliwości próbkowania(fs).
+
+W przypadku tłumienia zachodzi podobne zjawisko. ASK radzi sobie najgorzej, FSK już nieco lepiej, natomiast PSK nie ma żadnych trudności z odebraniem stłumionego sygnału nawet przy niskiej częstotliwości próbkowania(fs).
+
+Jeśli chodzi o zadanie 4, to w obydwóch scenariuszach również najlepiej wypada PSK, natomist FSK "dorównuje" PSK przy ustawieniu znacznie wyższej częstotliwości próbkowania(fs).
